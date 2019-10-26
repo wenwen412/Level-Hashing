@@ -1,4 +1,5 @@
 #include "level_hashing.h"
+#include <time.h>
 
 /*  Test:
     This is a simple test example to test the creation, insertion, search, deletion, update in Level hashing
@@ -12,6 +13,10 @@ int main(int argc, char* argv[])
     uint64_t inserted = 0, i = 0;
     uint8_t key[KEY_LEN];
     uint8_t value[VALUE_LEN];
+
+    clock_t start, finish;
+    double duration;
+    start = clock();
 
     for (i = 1; i < insert_num + 1; i ++)
     {
@@ -29,10 +34,16 @@ int main(int argc, char* argv[])
             level_insert(level, key, value);
             inserted ++;
         }
-    }   
-    printf("%ld items are inserted\n", inserted);
+    }
+
+    finish = clock();
+    duration = (double)(finish - start) / CLOCKS_PER_SEC;
+
+    printf("%ld items are inserted in %f seconds\n", inserted, duration);
+
 
     printf("The static search test begins ...\n");
+    start = clock();
     for (i = 1; i < insert_num + 1; i ++)
     {
         snprintf(key, KEY_LEN, "%ld", i);
@@ -40,8 +51,13 @@ int main(int argc, char* argv[])
         if(get_value == NULL)
             printf("Search the key %s: ERROR! \n", key);
    }
+    finish = clock();
+    duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    printf("%ld items are staticly serched in %f seconds\n", inserted, duration);
+
 
     printf("The dynamic search test begins ...\n");
+    start = clock();
     for (i = 1; i < insert_num + 1; i ++)
     {
         snprintf(key, KEY_LEN, "%ld", i);
@@ -49,8 +65,12 @@ int main(int argc, char* argv[])
         if(get_value == NULL)
             printf("Search the key %s: ERROR! \n", key);
    }
+    finish = clock();
+    duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    printf("%ld items are dynamicly serched in %f seconds\n", inserted, duration);
 
     printf("The update test begins ...\n");
+    start = clock();
     for (i = 1; i < insert_num + 1; i ++)
     {
         snprintf(key, KEY_LEN, "%ld", i);
@@ -58,14 +78,21 @@ int main(int argc, char* argv[])
         if(level_update(level, key, value))
             printf("Update the value of the key %s: ERROR! \n", key);
    }
+    finish = clock();
+    duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    printf("%ld items are updated in %f seconds\n", inserted, duration);
 
     printf("The deletion test begins ...\n");
+    start = clock();
     for (i = 1; i < insert_num + 1; i ++)
     {
         snprintf(key, KEY_LEN, "%ld", i);
         if(level_delete(level, key))
             printf("Delete the key %s: ERROR! \n", key);
    }
+    finish = clock();
+    duration = (double)(finish - start) / CLOCKS_PER_SEC;
+    printf("%ld items are deleted in %f seconds\n", inserted, duration);
 
     printf("The number of items stored in the level hash table: %ld\n", level->level_item_num[0]+level->level_item_num[1]);    
     level_destroy(level);
