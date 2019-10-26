@@ -18,7 +18,7 @@ uint64_t S_HASH(level_hash *level, const uint8_t *key) {
 
 /*
 Function: F_IDX() 
-        Compute the second hash location
+        Compute the first hash location
 */
 uint64_t F_IDX(uint64_t hashKey, uint64_t capacity) {
     return hashKey % (capacity / 2);
