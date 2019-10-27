@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "hash.h"
+#include "murmur2.h"
 
 #define ASSOC_NUM 4                       // The number of slots in a bucket
 #define KEY_LEN 16                        // The maximum length of a key

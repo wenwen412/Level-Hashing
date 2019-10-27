@@ -6,6 +6,7 @@ Function: F_HASH()
 */
 uint64_t F_HASH(level_hash *level, const uint8_t *key) {
     return (hash((void *)key, strlen(key), level->f_seed));
+    return (MurmurHash64A((void *)key, strlen(key), level->f_seed));
 }
 
 /*
@@ -14,6 +15,7 @@ Function: S_HASH()
 */
 uint64_t S_HASH(level_hash *level, const uint8_t *key) {
     return (hash((void *)key, strlen(key), level->s_seed));
+    return (MurmurHash64A((void *)key, strlen(key), level->s_seed));
 }
 
 /*

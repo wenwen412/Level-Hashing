@@ -154,3 +154,48 @@ uint64_t hash(const void *data, uint64_t length, uint64_t seed)
     }
     return string_key_hash_computation(data, length, seed, 0);
 }
+
+
+/*
+ * A Multiply-shift hash function implementation
+ * h=(x*z mod 2^w) div 2^(w-d)
+ * x: the interger key
+ * w: x is a w-bit interger (e.g., 32, 64)
+ * z: an odd w-bit constant
+ * 2^d: hash table size
+*/
+// The original interface: uint64_t hash(const void *data, uint64_t length, uint64_t seed)
+
+uint64_t hash2(const void *data, uint64_t length, uint64_t seed, uint64_t hashtableSizeBits)
+{
+    uint64_t key = *((int *)(data));
+    uint64_t WORDSIZE = 63;
+    uint64_t constantFactor = 744073709551615;
+
+
+    uint64_t modulus = pow(2, WORDSIZE); //2^w
+
+    uint64_t divisor = pow(2, WORDSIZE - hashtableSizeBits); //2^(2-d)
+
+    // indexModuloDivision = ((key * constantFactor) % modulus) / divisor; //(x*z) >> (w-d)
+    uint64_t indexModuloDivision = ((key * constantFactor) % modulus) >> (WORDSIZE - hashtableSizeBits);
+    return  indexModuloDivision;
+}
+
+
+uint64_t hash3(const void *data, uint64_t length, uint64_t seed)
+{
+    unsigned long hash = 5381;
+    const uint8_t *p = (const uint8_t *)data;
+
+    const uint8_t *end = p + length;
+
+    while (p < end)
+    {
+        hash = ((hash << 5) + hash) + p;
+        p++;
+    }
+
+    hash += seed;
+    return hash;
+}
