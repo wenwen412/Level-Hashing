@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     int insert_num = atoi(argv[2]);                     // INPUT: the number of items to be inserted
 
     level_hash *level = level_init(level_size);
-    uint64_t inserted = 0, i = 0, total_item_num = 0;
+    uint64_t inserted = 0, i = 0, j = 0, total_item_num = 0;
     uint8_t key[KEY_LEN];
     uint8_t value[VALUE_LEN];
 
@@ -20,6 +20,8 @@ int main(int argc, char* argv[])
 
     for (i = 1; i < insert_num + 1; i ++)
     {
+        if (i-inserted>1)
+          printf("why");
         snprintf(key, KEY_LEN, "%ld", i);
         snprintf(value, VALUE_LEN, "%ld", i);
         if (!level_insert(level, key, value))                               
@@ -28,9 +30,9 @@ int main(int argc, char* argv[])
         }else
         {
             total_item_num = 0;
-            for (i = 0; i < NUM_LEVELS; i++)
+            for (j = 0; j < NUM_LEVELS; j++)
             {
-                total_item_num += level->level_item_num[i];
+                total_item_num += level->level_item_num[j];
 //                printf("Item num on level %d is %d,  Space utilization is %f\n",
 //                       i, level->level_item_num[i],
 //                       level->level_item_num[i]/(level->addr_capacity*ASSOC_NUM/pow(2,i)));
