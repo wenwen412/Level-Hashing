@@ -1,4 +1,5 @@
 #include "level_hashing.h"
+#include "flush_delay.h"
 
 /*
 Function: F_HASH()
@@ -49,10 +50,10 @@ void generate_seeds(level_hash *level)
     srand(time(NULL));
     do
     {
-        level->f_seed = 123456736542389;
-        level->s_seed = 987623568254321;
-        level->f_seed = level->f_seed << (13585227924687 % 63);
-        level->s_seed = level->s_seed << (97531423487521 % 63);
+        level->f_seed = 1234567365423893;
+        level->s_seed = 9876235682543215;
+        level->f_seed = level->f_seed << (135852279246871 % 63);
+        level->s_seed = level->s_seed << (975314234875211 % 63);
     } while (level->f_seed == level->s_seed);
 }
 
@@ -159,6 +160,7 @@ void level_expand(level_hash *level)
                 }
                 if(!insertSuccess){
                     printf("The expanding fails: 3\n");
+                    break;
                     exit(1);                    
                 }
                 
