@@ -49,25 +49,28 @@ int main(int argc, char* argv[])
         snprintf(key, KEY_LEN, "%ld", i);
         uint8_t* get_value = level_static_query(level, key);
         if(get_value == NULL)
+        {
             printf("Search the key %s: ERROR! \n", key);
+        }
+
    }
     finish = clock();
     duration = (double)(finish - start) / CLOCKS_PER_SEC;
     printf("%ld items are staticly serched in %f seconds\n", inserted, duration);
 
 
-    printf("The dynamic search test begins ...\n");
-    start = clock();
-    for (i = 1; i < insert_num + 1; i ++)
-    {
-        snprintf(key, KEY_LEN, "%ld", i);
-        uint8_t* get_value = level_dynamic_query(level, key);
-        if(get_value == NULL)
-            printf("Search the key %s: ERROR! \n", key);
-   }
-    finish = clock();
-    duration = (double)(finish - start) / CLOCKS_PER_SEC;
-    printf("%ld items are dynamicly serched in %f seconds\n", inserted, duration);
+//    printf("The dynamic search test begins ...\n");
+//    start = clock();
+//    for (i = 1; i < insert_num + 1; i ++)
+//    {
+//        snprintf(key, KEY_LEN, "%ld", i);
+//        uint8_t* get_value = level_dynamic_query(level, key);
+//        if(get_value == NULL)
+//            printf("Search the key %s: ERROR! \n", key);
+//   }
+//    finish = clock();
+//    duration = (double)(finish - start) / CLOCKS_PER_SEC;
+//    printf("%ld items are dynamicly serched in %f seconds\n", inserted, duration);
 
     printf("The update test begins ...\n");
     start = clock();
@@ -88,13 +91,15 @@ int main(int argc, char* argv[])
     {
         snprintf(key, KEY_LEN, "%ld", i);
         if(level_delete(level, key))
+        {
             printf("Delete the key %s: ERROR! \n", key);
+        }
    }
     finish = clock();
     duration = (double)(finish - start) / CLOCKS_PER_SEC;
     printf("%ld items are deleted in %f seconds\n", inserted, duration);
 
-    printf("The number of items stored in the level hash table: %ld\n", level->level_item_num[0]+level->level_item_num[1]);    
+    printf("The number of items stored in the level hash table: %ld\n", level->level_item_num[0]+level->level_item_num[1]);
     level_destroy(level);
 
     return 0;

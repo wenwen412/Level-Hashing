@@ -8,9 +8,10 @@
 #include "hash.h"
 #include "murmur2.h"
 
-#define ASSOC_NUM 4                       // The number of slots in a bucket
+#define ASSOC_NUM 2                       // The number of slots in a bucket
 #define KEY_LEN 16                        // The maximum length of a key
 #define VALUE_LEN 15                      // The maximum length of a value
+#define NUM_LEVELS 4
 
 typedef struct entry{                     // A slot storing a key-value item 
     uint8_t key[KEY_LEN];
@@ -24,8 +25,8 @@ typedef struct level_bucket               // A bucket
 } level_bucket;
 
 typedef struct level_hash {               // A Level hash table
-    level_bucket *buckets[2];             // The top level and bottom level in the Level hash table
-    uint64_t level_item_num[2];           // The numbers of items stored in the top and bottom levels respectively
+    level_bucket *buckets[NUM_LEVELS];             // The top level and bottom level in the Level hash table
+    uint64_t level_item_num[NUM_LEVELS];           // The numbers of items stored in the top and bottom levels respectively
     uint64_t addr_capacity;               // The number of buckets in the top level
     uint64_t total_capacity;              // The number of all buckets in the Level hash table    
     uint64_t level_size;                  // level_size = log2(addr_capacity)
