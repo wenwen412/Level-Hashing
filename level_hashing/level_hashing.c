@@ -442,15 +442,32 @@ uint8_t level_insert(level_hash *level, uint8_t *key, uint8_t *value)
             {
                 memcpy(level->buckets[i][f_idx].slot[j].key, key, KEY_LEN);
                 memcpy(level->buckets[i][f_idx].slot[j].value, value, VALUE_LEN);
+                if (!CAPACITOR){
+                    persistent(&level->buckets[i][f_idx].slot[j].key, KEY_LEN, 0);
+                    persistent(&level->buckets[i][f_idx].slot[j].value, VALUE_LEN, 0);
+                }
+
                 level->buckets[i][f_idx].token[j] = 1;
                 level->level_item_num[i] ++;
+                if (!CAPACITOR)
+                    persistent(&level->buckets[i][f_idx].token[j], sizeof(uint8_t), 1);
+                else
+                    persistent(&level->buckets[i][f_idx].slot[j], sizeof(entry), 1);
                 return 0;
             }
             if (level->buckets[i][s_idx].token[j] == 0) 
             {
                 memcpy(level->buckets[i][s_idx].slot[j].key, key, KEY_LEN);
                 memcpy(level->buckets[i][s_idx].slot[j].value, value, VALUE_LEN);
+                if (!CAPACITOR){
+                    persistent(&level->buckets[i][s_idx].slot[j].key, KEY_LEN, 0);
+                    persistent(&level->buckets[i][s_idx].slot[j].value, VALUE_LEN, 0);
+                }
                 level->buckets[i][s_idx].token[j] = 1;
+                if (!CAPACITOR)
+                    persistent(&level->buckets[i][s_idx].token[j], sizeof(uint8_t), 1);
+                else
+                    persistent(&level->buckets[i][s_idx].slot[j], sizeof(entry), 1);
                 level->level_item_num[i] ++;
                 return 0;
             }
@@ -480,7 +497,16 @@ uint8_t level_insert(level_hash *level, uint8_t *key, uint8_t *value)
         if(empty_location != -1){
             memcpy(level->buckets[NUM_LEVELS-1][f_idx].slot[empty_location].key, key, KEY_LEN);
             memcpy(level->buckets[NUM_LEVELS-1][f_idx].slot[empty_location].value, value, VALUE_LEN);
+            if (!CAPACITOR){
+                persistent(&level->buckets[NUM_LEVELS-1][f_idx].slot[empty_location].key, KEY_LEN, 0);
+                persistent(&level->buckets[NUM_LEVELS-1][f_idx].slot[empty_location].value, VALUE_LEN, 0);
+            }
             level->buckets[NUM_LEVELS-1][f_idx].token[empty_location] = 1;
+            if (!CAPACITOR)
+                persistent(&level->buckets[NUM_LEVELS-1][f_idx].token[empty_location], sizeof(uint8_t), 1);
+            else
+                persistent(&level->buckets[NUM_LEVELS-1][f_idx].slot[empty_location], sizeof(entry), 1);
+
             level->level_item_num[NUM_LEVELS-1] ++;
             return 0;
         }
@@ -524,13 +550,49 @@ uint8_t try_movement(level_hash *level, uint64_t idx, uint64_t level_num, uint8_
             {
                 memcpy(level->buckets[level_num][jdx].slot[j].key, m_key, KEY_LEN);
                 memcpy(level->buckets[level_num][jdx].slot[j].value, m_value, VALUE_LEN);
+                if (!CAPACITOR){
+                    persistent(&level->buckets[level_num][jdx].slot[j].key, KEY_LEN, 0);
+                    persistent(&level->buckets[level_num][jdx].slot[j].value, VALUE_LEN, 0);
+                }
+                // For level-hash, The following 2 token changes has to be atomic,
+                // a  stright-forward way is to add a change-log,
+                // log content would be address of 2 token locations: which are 2*64 bits write
+                // we micmic the cost of 2*64 bits write here
+                // With a capacitor, we could go without the atomic requirement
                 level->buckets[level_num][jdx].token[j] = 1;
                 level->buckets[level_num][idx].token[i] = 0;
+
+                level->pseudo_log[0] = &(level->buckets[level_num][jdx].token[j]);
+                level->pseudo_log[1] =  &(level->buckets[level_num][jdx].token[i]);
+                level->pseudo_log[2] = 1;
+
+                if (!CAPACITOR)
+                {
+                    persistent(&level->buckets[level_num][jdx].token[j], sizeof(uint8_t), 1);
+                    persistent(&level->buckets[level_num][idx].token[i], sizeof(uint8_t), 1);
+                    persistent(&(level->pseudo_log[0]), sizeof(uint64_t), 0);
+                    persistent(&(level->pseudo_log[1]), sizeof(uint64_t), 0);
+                    persistent(&(level->pseudo_log[2]), sizeof(uint64_t), 1);
+                }
+                else
+                    persistent(&level->buckets[level_num][f_idx].slot[j], sizeof(entry), 1);
+
+
                 // The movement is finished and then the new item is inserted
 
                 memcpy(level->buckets[level_num][idx].slot[i].key, key, KEY_LEN);
                 memcpy(level->buckets[level_num][idx].slot[i].value, value, VALUE_LEN);
+                if (!CAPACITOR){
+                    persistent(&level->buckets[level_num][idx].slot[i].key, KEY_LEN, 0);
+                    persistent(&level->buckets[level_num][idx].slot[i].value, VALUE_LEN, 0);
+                }
                 level->buckets[level_num][idx].token[i] = 1;
+                if (!CAPACITOR)
+                {
+                    persistent(&level->buckets[level_num][idx].token[i], sizeof(uint8_t), 1);
+                }
+                else
+                    persistent(&level->buckets[level_num][idx].slot[i], sizeof(entry), 1);
                 level->level_item_num[level_num] ++;
                 
                 return 0;
@@ -565,7 +627,21 @@ int b2t_movement(level_hash *level, uint64_t idx)
             {
                 memcpy(level->buckets[0][f_idx].slot[j].key, key, KEY_LEN);
                 memcpy(level->buckets[0][f_idx].slot[j].value, value, VALUE_LEN);
+
+                if (!CAPACITOR){
+                    persistent(&level->buckets[0][f_idx].slot[j].key, KEY_LEN, 0);
+                    persistent(&level->buckets[0][f_idx].slot[j].value, VALUE_LEN, 0);
+
+                    persistent(&(level->pseudo_log[0]), sizeof(uint64_t), 0);
+                    persistent(&(level->pseudo_log[1]), sizeof(uint64_t), 0);
+                    persistent(&(level->pseudo_log[2]), sizeof(uint64_t), 1);
+                }
                 level->buckets[0][f_idx].token[j] = 1;
+                if (!CAPACITOR)
+                    persistent(&level->buckets[0][f_idx].token[j], sizeof(uint8_t), 1);
+                else
+                    persistent(&level->buckets[0][f_idx].slot[j], sizeof(entry), 1);
+
                 level->buckets[NUM_LEVELS-1][idx].token[i] = 0;
                 level->level_item_num[0] ++;
                 level->level_item_num[NUM_LEVELS-1] --;
@@ -575,6 +651,18 @@ int b2t_movement(level_hash *level, uint64_t idx)
             {
                 memcpy(level->buckets[0][s_idx].slot[j].key, key, KEY_LEN);
                 memcpy(level->buckets[0][s_idx].slot[j].value, value, VALUE_LEN);
+                if (!CAPACITOR){
+                    persistent(&level->buckets[0][s_idx].slot[j].key, KEY_LEN, 0);
+                    persistent(&level->buckets[0][s_idx].slot[j].value, VALUE_LEN, 0);
+                    persistent(&(level->pseudo_log[0]), sizeof(uint64_t), 0);
+                    persistent(&(level->pseudo_log[1]), sizeof(uint64_t), 0);
+                    persistent(&(level->pseudo_log[2]), sizeof(uint64_t), 1);
+                }
+                level->buckets[0][s_idx].token[j] = 1;
+                if (!CAPACITOR)
+                    persistent(&level->buckets[0][f_idx].token[j], sizeof(uint8_t), 1);
+                else
+                    persistent(&level->buckets[0][f_idx].slot[j], sizeof(entry), 1);
                 level->buckets[0][s_idx].token[j] = 1;
                 level->buckets[NUM_LEVELS-1][idx].token[i] = 0;
                 level->level_item_num[0] ++;

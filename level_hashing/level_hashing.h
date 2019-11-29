@@ -8,10 +8,11 @@
 #include "hash.h"
 #include "murmur2.h"
 
-#define ASSOC_NUM 2                       // The number of slots in a bucket
+#define CAPACITOR 0
+#define ASSOC_NUM 3                       // The number of slots in a bucket
 #define KEY_LEN 16                        // The maximum length of a key
 #define VALUE_LEN 15                      // The maximum length of a value
-#define NUM_LEVELS 4
+#define NUM_LEVELS 3
 
 typedef struct entry{                     // A slot storing a key-value item 
     uint8_t key[KEY_LEN];
@@ -35,6 +36,12 @@ typedef struct level_hash {               // A Level hash table
                                           // ‘1’ means the hash table is being expanded; ‘2’ means the hash table is being shrunk.
     uint64_t f_seed;
     uint64_t s_seed;                      // Two randomized seeds for hash functions
+
+    /* This is a pseudo-log to mimic the logging costs,
+     * fake_log[0] = &(old_slot), fake_log[1] = &(new_slot),
+     *  fake_log[2] = 0/1 is a commit flag; */
+
+    uint64_t pseudo_log[3];
 } level_hash;
 
 level_hash *level_init(uint64_t level_size);     
