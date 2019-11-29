@@ -365,6 +365,7 @@ uint8_t level_delete(level_hash *level, uint8_t *key)
             if (level->buckets[i][f_idx].token[j] == 1&&strcmp(level->buckets[i][f_idx].slot[j].key, key) == 0)
             {
                 level->buckets[i][f_idx].token[j] = 0;
+                persistent(&level->buckets[i][f_idx].token[j], sizeof(uint8_t), 0);
                 level->level_item_num[i] --;
                 return 0;
             }
@@ -373,6 +374,7 @@ uint8_t level_delete(level_hash *level, uint8_t *key)
             if (level->buckets[i][s_idx].token[j] == 1&&strcmp(level->buckets[i][s_idx].slot[j].key, key) == 0)
             {
                 level->buckets[i][s_idx].token[j] = 0;
+                persistent(&level->buckets[i][s_idx].token[j], sizeof(uint8_t), 0);
                 level->level_item_num[i] --;
                 return 0;
             }
@@ -402,6 +404,7 @@ uint8_t level_update(level_hash *level, uint8_t *key, uint8_t *new_value)
             if (level->buckets[i][f_idx].token[j] == 1&&strcmp(level->buckets[i][f_idx].slot[j].key, key) == 0)
             {
                 memcpy(level->buckets[i][f_idx].slot[j].value, new_value, VALUE_LEN);
+                persistent(&level->buckets[i][f_idx].slot[j].value, VALUE_LEN, 0);
                 return 0;
             }
         }
@@ -409,6 +412,7 @@ uint8_t level_update(level_hash *level, uint8_t *key, uint8_t *new_value)
             if (level->buckets[i][s_idx].token[j] == 1&&strcmp(level->buckets[i][s_idx].slot[j].key, key) == 0)
             {
                 memcpy(level->buckets[i][s_idx].slot[j].value, new_value, VALUE_LEN);
+                persistent(&level->buckets[i][s_idx].slot[j].value, VALUE_LEN, 0);
                 return 0;
             }
         }
